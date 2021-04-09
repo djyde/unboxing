@@ -52,7 +52,7 @@ module.exports = {
 
 When copy the `_unboxing.config.js` file in template, it would be renamed to `unboxing.config.js`.
 
-- `prompts` [enquirer](https://github.com/enquirer/enquirer) prompt objects. The results would pass to the template file:
+- `prompts` [enquirer](https://github.com/enquirer/enquirer) prompt objects. The results would be passed to the template file:
 
 ```js
 module.exports = {
