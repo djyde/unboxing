@@ -75,6 +75,21 @@ module.exports = {
 }
 ```
 
+# Build
+
+```bash
+$ cd packages/unboxing && npm i
+
+# testing
+$ npm test
+
+# watch
+$ npm run watch
+
+# build
+$ npm run build
+```
+
 # License
 
 MIT
