@@ -1,0 +1,19 @@
+{
+  "name": "hi",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": "bin.js",
+  "files": [
+    "bin.js",
+    "template"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "unboxing": "workspace:*"
+  }
+}

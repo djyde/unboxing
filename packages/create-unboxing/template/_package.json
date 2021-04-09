@@ -1,0 +1,16 @@
+{
+  "name": "{{ name }}",
+  "version": "1.0.0",
+  "description": "{{ description }}",
+  "main": "index.js",
+  "bin": "bin.js",
+  "files": [
+    "bin.js",
+    "template"
+  ],
+  "scripts": {
+  },
+  "dependencies": {
+    "unboxing": "^0.0.2"
+  }
+}
