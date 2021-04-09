@@ -14,10 +14,16 @@ export type UnboxingOptions = {
 }
 
 export type UnboxingConfig = {
-  prompts?: any[]
+  prompts?: any[],
+  renameMap?: Record<string, string>
 }
 
-const CONFIG_FILE_NAME = "krate.config.js";
+const CONFIG_FILE_NAME = "unboxing.config.js";
+const DEFAULT_RENAME_MAP = {
+  '_package.json': 'package.json',
+  '_gitignore': '.gitignore',
+  '_npmrc': '.npmrc',
+}
 export class Unboxing {
 
   resolvedConfig = {} as {
@@ -67,7 +73,7 @@ export class Unboxing {
     }
   }
 
-  generate(data = {}) {
+  generate(data = {}, options: {} = {}) {
     const files = this.walkTemplateFiles();
     const ufs = new Union();
     const volumn = Volume.fromJSON({});
@@ -77,6 +83,16 @@ export class Unboxing {
       ufs.use(fs)
     }
 
+    let renameMap = DEFAULT_RENAME_MAP
+
+    // rename map
+    if (this.resolvedConfig.config?.renameMap) {
+      renameMap = {
+        ...renameMap,
+        ...this.resolvedConfig.config.renameMap
+      }
+    }
+
     files.forEach((file) => {
       const parsed = file.isTextFile
         ? nunjucks.renderString(
@@ -84,9 +100,11 @@ export class Unboxing {
             data
           )
         : "";
+
+        const fileName = path.basename(file.relative)
         const target = path.resolve(
           this.resolvedConfig.testing ? "/" : this.resolvedConfig.outputDir,
-          file.relative
+          renameMap[fileName] ? file.relative.replace(fileName, renameMap[fileName]) : file.relative
         );
         if (file.isTextFile) {
           if (!ufs.existsSync(path.dirname(target))) {

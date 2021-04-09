@@ -5,5 +5,5 @@ module.exports = {
       name: 'foo',
       message: 'App name'
     }
-  ]
+  ],
 }
