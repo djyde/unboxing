@@ -8,7 +8,7 @@ test('generate', async () => {
     testing: true,
   });
 
-  const result = app.generate({
+  const result = app.generate('.', {
     name: 'foo'
   }).toJSON()
   const packageJsonFile = fs.readFileSync(path.resolve(__dirname, 'template', '_package.json'), { encoding: 'utf-8' })

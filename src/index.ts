@@ -6,16 +6,18 @@ import * as fs from 'fs'
 import { Volume } from 'memfs'
 import { Union } from 'unionfs'
 import enquirer from 'enquirer'
+import minimist from 'minimist'
+import executable from "executable";
 
 export type UnboxingOptions = {
   templateDir?: string
   testing?: boolean
-  outputDir?: string
 }
 
 export type UnboxingConfig = {
   prompts?: any[],
-  renameMap?: Record<string, string>
+  renameMap?: Record<string, string>,
+  copy?
 }
 
 const CONFIG_FILE_NAME = "unboxing.config.js";
@@ -30,7 +32,6 @@ export class Unboxing {
     root: string
     templateDir: string;
     testing: boolean;
-    outputDir: string
     config: UnboxingConfig
   };
 
@@ -47,8 +48,6 @@ export class Unboxing {
     this.resolvedConfig.config = fs.existsSync(configPath) ? require(configPath) : {}
     // config: testing
     this.resolvedConfig.testing = options?.testing ? true : false
-    // config: outputDir
-    this.resolvedConfig.outputDir = options?.outputDir || process.cwd()
   }
 
   walkTemplateFiles() {
@@ -73,7 +72,7 @@ export class Unboxing {
     }
   }
 
-  generate(data = {}, options: {} = {}) {
+  generate(outputDir: string, data = {}) {
     const files = this.walkTemplateFiles();
     const ufs = new Union();
     const volumn = Volume.fromJSON({});
@@ -103,14 +102,25 @@ export class Unboxing {
 
         const fileName = path.basename(file.relative)
         const target = path.resolve(
-          this.resolvedConfig.testing ? "/" : this.resolvedConfig.outputDir,
+          this.resolvedConfig.testing ? "/" : path.resolve(process.cwd(), outputDir),
           renameMap[fileName] ? file.relative.replace(fileName, renameMap[fileName]) : file.relative
         );
         if (file.isTextFile) {
-          if (!ufs.existsSync(path.dirname(target))) {
-            ufs.mkdirSync(path.dirname(target))
+          if (executable.sync(file.path)) {
+            // executable file, just copy
+            if (!this.resolvedConfig.testing) {
+              // just copy
+              if (!fs.existsSync(path.dirname(target))) {
+                fs.mkdirSync(path.dirname(target));
+              }
+              fs.copyFileSync(file.path, target);
+            }
+          } else {
+            if (!ufs.existsSync(path.dirname(target))) {
+              ufs.mkdirSync(path.dirname(target));
+            }
+            ufs.writeFileSync(target, parsed);
           }
-          ufs.writeFileSync(target, parsed);
         } else {
           if (!this.resolvedConfig.testing) {
             // just copy
@@ -130,9 +140,10 @@ export class Unboxing {
 
   }
 
-  async cli() {
+  async cli(_argv) {
+    const argv = minimist(_argv.slice(2))
     const answers = await this.getAnswers()
-    return this.generate(answers)
+    return this.generate(argv._[0] || '.', answers)
   }
 
   info() {

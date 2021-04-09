@@ -1,10 +1,12 @@
 {
 	"name": "unboxing",
 	"version": "0.0.2",
+	"main": "lib/index.js",
 	"files": [
 		"lib"
 	],
 	"scripts": {
+		"watch": "tsc --watch",
 		"clean": "rm -rf lib",
 		"build": "npm run clean && tsc",
 		"test": "jest"
@@ -21,8 +23,10 @@
 	"dependencies": {
 		"@nodelib/fs.walk": "^1.2.6",
 		"enquirer": "^2.3.6",
+		"executable": "^4.1.1",
 		"is-text-path": "^2.0.0",
 		"memfs": "^3.2.2",
+		"minimist": "^1.2.5",
 		"nunjucks": "^3.2.3",
 		"unionfs": "^4.4.0"
 	}
