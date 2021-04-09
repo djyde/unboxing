@@ -5,23 +5,30 @@ import nunjucks from 'nunjucks'
 import * as fs from 'fs'
 import { Volume } from 'memfs'
 import { Union } from 'unionfs'
+import enquirer from 'enquirer'
 
-export type Options = {
+export type UnboxingOptions = {
   templateDir?: string
   testing?: boolean
   outputDir?: string
 }
 
-export class Armin {
+export type UnboxingConfig = {
+  prompts?: any[]
+}
+
+const CONFIG_FILE_NAME = "krate.config.js";
+export class Unboxing {
 
   resolvedConfig = {} as {
     root: string
     templateDir: string;
     testing: boolean;
     outputDir: string
+    config: UnboxingConfig
   };
 
-  constructor(root: string, options?: Options) {
+  constructor(root: string, options?: UnboxingOptions) {
     nunjucks.configure({
       autoescape: false
     })
@@ -30,6 +37,8 @@ export class Armin {
     // config: templateDir
     const templateDirName = options?.templateDir || 'template'
     this.resolvedConfig.templateDir = path.resolve(this.resolvedConfig.root, templateDirName)
+    const configPath = path.resolve(this.resolvedConfig.templateDir, CONFIG_FILE_NAME);
+    this.resolvedConfig.config = fs.existsSync(configPath) ? require(configPath) : {}
     // config: testing
     this.resolvedConfig.testing = options?.testing ? true : false
     // config: outputDir
@@ -40,7 +49,7 @@ export class Armin {
     const files = fsWalk.walkSync(this.resolvedConfig.templateDir, {
       stats: true,
       // deepFilter: (entry) => entry.dirent.isFile()
-    }).filter(_ => !_.dirent.isDirectory()).map(file => {
+    }).filter(_ => !_.dirent.isDirectory() && _.name !== CONFIG_FILE_NAME).map(file => {
       return {
         ...file,
         relative: path.relative(this.resolvedConfig.templateDir, file.path),
@@ -50,7 +59,15 @@ export class Armin {
     return files
   }
 
-  generate() {
+  async getAnswers() {
+    if (this.resolvedConfig.config.prompts) {
+      return await enquirer.prompt(this.resolvedConfig.config.prompts)
+    } else {
+      return {}
+    }
+  }
+
+  generate(data = {}) {
     const files = this.walkTemplateFiles();
     const ufs = new Union();
     const volumn = Volume.fromJSON({});
@@ -64,7 +81,7 @@ export class Armin {
       const parsed = file.isTextFile
         ? nunjucks.renderString(
             fs.readFileSync(file.path, { encoding: "utf-8" }),
-            {}
+            data
           )
         : "";
         const target = path.resolve(
@@ -93,6 +110,11 @@ export class Armin {
 
     return volumn
 
+  }
+
+  async cli() {
+    const answers = await this.getAnswers()
+    return this.generate(answers)
   }
 
   info() {

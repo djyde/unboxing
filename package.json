@@ -1,4 +1,10 @@
 {
+	"name": "unboxing",
+	"version": "0.0.1",
+	"scripts": {
+		"clean": "rm -rf lib",
+		"build": "npm run clean && tsc"
+	},
 	"devDependencies": {
 		"@types/node": "^14.14.37",
 		"@types/nunjucks": "^3.1.4",
@@ -7,6 +13,7 @@
 	},
 	"dependencies": {
 		"@nodelib/fs.walk": "^1.2.6",
+		"enquirer": "^2.3.6",
 		"is-text-path": "^2.0.0",
 		"memfs": "^3.2.2",
 		"nunjucks": "^3.2.3",

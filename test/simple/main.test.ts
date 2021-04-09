@@ -1,8 +1,12 @@
-import { Armin } from '../../src'
+import { Unboxing } from '../../src'
 
-const cli = new Armin(__dirname, {
+const app = new Unboxing(__dirname, {
   testing: true
   // outputDir: 'output'
 })
-const volumn = cli.generate()
-console.log(volumn.toJSON())
+
+
+;(async () => {
+const result = await app.cli();
+console.log(result.toJSON());
+})()
